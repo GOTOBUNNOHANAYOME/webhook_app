@@ -19,6 +19,10 @@ return [
         'driver' => 'file',
         // 'store' => 'redis',
     ],
+    'basic' => [
+        'user'     => env('BASIC_AUTH_USER_NAME'),
+        'password' => env('BASIC_AUTH_PW')
+    ],
     'providers' => ServiceProvider::defaultProviders()->merge([
         /*
          * Package Service Providers...
