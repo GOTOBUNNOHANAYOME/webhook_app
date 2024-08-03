@@ -29,8 +29,14 @@ class LoginHistoryRequest extends FormRequest
                 'between:8,255',
                 'string',
                 function ($attribute, $value, $fail) {
-                    if (User::where('email', $this->email)->exists() || !Hash::check($value, User::where('email', $this->email)->value('password'))) {
+                    $user = User::where('email', $this->email)->first();
+                    
+                    if (is_null($user) || !Hash::check($value, $user->password)) {
                         $fail(':attributeが一致していません。');
+                    }
+
+                    if (!$user->is_enable) {
+                        $fail('有効なユーザーではありません。');
                     }
                 }
             ],
