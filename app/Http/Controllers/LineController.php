@@ -19,6 +19,9 @@ class LineController extends Controller
             case LineRequestType::FOLLOW:
                 $this->followEvent($request_data);
                 break;
+            case LineRequestType::UNFOLLOW:
+                $this->unfollowEvent($request_data);
+                break;
         }
     }
 
@@ -58,5 +61,16 @@ class LineController extends Controller
             $line_account->is_enable = true;
             $line_account->save();
         }
+    }
+
+    public function unfollowEvent($request_data)
+    {
+        $line_user_id = $request_data->events->sourse->userId;
+
+        LineAccount::query()
+            ->where('line_user_id', $line_user_id)
+            ->update([
+                'is_enable' => false
+            ]);
     }
 }

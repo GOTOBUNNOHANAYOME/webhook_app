@@ -7,4 +7,5 @@ use BenSampo\Enum\Enum;
 final class LineRequestType extends Enum
 {
     const FOLLOW = 'follow';
+    const UNFOLLOW = 'unfollow';
 }
