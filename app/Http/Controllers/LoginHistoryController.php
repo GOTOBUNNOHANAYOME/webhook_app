@@ -6,6 +6,7 @@ use App\Models\{
     LoginHistory,
     User,
 };
+use App\Http\Requests\LoginHistoryRequest;
 use Illuminate\Http\Request;
 
 class LoginHistoryController extends Controller
@@ -15,9 +16,11 @@ class LoginHistoryController extends Controller
         return view('login_histories.create');
     }
 
-    public function store(Request $request, User $user)
+    public function store(LoginHistoryRequest $request)
     {
-        dd('a');
+        $user = User::where('email', $request->email)->first();
+
+        auth()->login($user);
 
         LoginHistory::create([
             'user_id'    => auth()->id(),
