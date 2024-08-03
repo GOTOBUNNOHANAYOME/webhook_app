@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\LoginHistoryController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +16,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('layout.app');
+    return to_route('login_histories.create');
+});
+
+Route::controller(UserController::class)->prefix('users')->as('users.')->group(function(){
+
+});
+
+Route::controller(LoginHistoryController::class)->prefix('login_histories')->as('login_histories.')->group(function(){
+    Route::get('/create', 'create')->name('create');
+    Route::post('/store', 'store')->name('store');
 });
