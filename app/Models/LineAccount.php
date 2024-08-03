@@ -12,8 +12,9 @@ class LineAccount extends Model
     protected $fillable = [
         'user_id',
         'line_user_id',
-        'line_user_name',
+        'name',
         'language',
-        'icon_path'
+        'icon_path',
+        'is_enable'
     ];
 }
