@@ -22,4 +22,9 @@ class LineAccount extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function lineAuthentications()
+    {
+        return $this->hasMany(LineAuthentication::class);
+    }
 }
