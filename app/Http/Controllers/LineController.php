@@ -33,7 +33,7 @@ class LineController extends Controller
                     $this->unfollowEvent($request_data);
                     break;
                 case LineRequestType::ACCOUNT_LINK:
-                    $this->accountLink($request_data);
+                    $this->accountLinkEvent($request_data);
                     break;
                 default;
             }
@@ -150,10 +150,10 @@ class LineController extends Controller
             ]);
     }
 
-    private function accountLink($request_data)
+    private function accountLinkEvent($request_data)
     {
         $line_user_id = $request_data->events[0]->source->userId;
-        $nonce = $request_data->events[0]->link->nonce;
+        $nonce = base64_decode($request_data->events[0]->link->nonce);
         $result = $request_data->events[0]->link->result;
 
         if($result !== 'ok'){
@@ -169,8 +169,8 @@ class LineController extends Controller
         
         $account_id = null;
         do{
-            $nonce = Str::random(rand(30));
-        }while(User::where('account_id', $nonce)->exists());
+            $account_id = Str::random(30);
+        }while(User::where('account_id', $account_id)->exists());
 
         $user = User::create([
             'account_id' => $account_id,
@@ -194,12 +194,12 @@ class LineController extends Controller
 
         $nonce = null;
         do{
-            $nonce = base64_encode(Str::random(rand(128,256)));
+            $nonce = Str::random(rand(10, 128));
         }while(LineAuthentication::where('nonce', $nonce)->exists());
 
         $line_authentication->nonce = $nonce;
         $line_authentication->save();
 
-        return redirect()->away(config('line.link_nonce') . '?linkToken=' . $link_token . '&nonce=' . $nonce);
+        return redirect()->away(config('line.link_nonce') . '?linkToken=' . $link_token . '&nonce=' . base64_encode($nonce));
     }
 }
