@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('login_histories', function (Blueprint $table) {
+        Schema::create('login_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('ip');
@@ -25,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('login_histories', function (Blueprint $table) {
-            Schema::dropIfExists('login_histories');
-        });
+        Schema::dropIfExists('login_histories');
     }
 };
