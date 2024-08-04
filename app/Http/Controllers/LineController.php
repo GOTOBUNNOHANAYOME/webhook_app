@@ -59,13 +59,62 @@ class LineController extends Controller
 
             $response_body = json_decode($response->getBody()->getContents(), false);
 
-            LineAccount::create([
+            $line_account = LineAccount::create([
                 'name'          => $response_body->displayName,
                 'line_user_id'  => $line_user_id,
                 'language'      => $response_body->language,
                 'icon_path'     => $response_body->pictureUrl,
                 'is_enable'     => true
             ]);
+        }
+
+        $user = $line_account->user;
+        if(is_null($user)){
+            $client = new Client();
+
+            $headers = [
+                'Authorization' => 'Bearer ' . config('line.access_token')
+            ];
+
+            $response = $client->request('POST', config('line.account_link') . '/' . $line_user_id . '/linkToken', [
+                'headers' => $headers,
+            ]);
+
+            if($response->getStatusCode() !== 200){
+                abort(404);
+            }
+
+            $response_body = json_decode($response->getBody()->getContents(), false);
+            
+            $request_body = [
+                'to'       => $line_account->line_user_id,
+                'messages' => [
+                    [
+                        'type'     => 'template',
+                        'altText'  => 'Account Link',
+                        'template' => [
+                            'type'    => 'buttons',
+                            'text'    => 'Account Link',
+                            'actions' => [
+                                [
+                                    'type'  => 'uri',
+                                    'label' => 'Account Link',
+                                    'uri'   => route('line.create', ['linkToken' => $response_body->linkToken]),
+                                ],
+                            ],
+                        ],
+                    ]
+                ]
+            ];
+
+            $response = $client->request('POST', config('line.message_push'), [
+                'headers' => $headers,
+                'body'    => $request_body
+            ]);
+
+            if($response->getStatusCode() !== 200){
+                abort(404);
+            }
         }
 
         if(!$line_account->is_enable){
@@ -83,5 +132,11 @@ class LineController extends Controller
             ->update([
                 'is_enable' => false
             ]);
+    }
+
+    public function create(Request $request)
+    {
+        $request->query('linkToken');
+        return view('line.create');
     }
 }
