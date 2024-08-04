@@ -8,7 +8,7 @@ Route::get('/', function () {
     return to_route('login_histories.create');
 });
 
-Route::get('/line/account-link/', [LineController::class, '/accountLink'])->name('line.account_link');
+Route::get('/line/account-link', [LineController::class, 'redirectAccountLink'])->name('line.redirect_account_link');
 
 Route::middleware(['login.verify'])->group(function(){    
     Route::controller(LoginHistoryController::class)->prefix('login_histories')->as('login_histories.')->group(function(){

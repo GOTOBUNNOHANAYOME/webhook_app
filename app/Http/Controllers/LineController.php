@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\{
     LineAccount,
-    LineAuthentication
+    LineAuthentication,
+    User
 };
 use App\Enums\{
     LineRequestType,
@@ -30,6 +31,9 @@ class LineController extends Controller
                     break;
                 case LineRequestType::UNFOLLOW:
                     $this->unfollowEvent($request_data);
+                    break;
+                case LineRequestType::ACCOUNT_LINK:
+                    $this->accountLink($request_data);
                     break;
                 default;
             }
@@ -111,7 +115,7 @@ class LineController extends Controller
                                 [
                                     'type'  => 'uri',
                                     'label' => 'Account Link',
-                                    'uri'   => route('line.account_link', ['linkToken' => $response_body->linkToken]),
+                                    'uri'   => route('line.redirect_account_link', ['linkToken' => $response_body->linkToken]),
                                 ],
                             ],
                         ],
@@ -146,7 +150,38 @@ class LineController extends Controller
             ]);
     }
 
-    public function accountLink(Request $request)
+    private function accountLink($request_data)
+    {
+        $line_user_id = $request_data->events[0]->source->userId;
+        $nonce = $request_data->events[0]->link->nonce;
+        $result = $request_data->events[0]->link->result;
+
+        if($result !== 'ok'){
+            abort(404);
+        }
+
+        $line_account = LineAccount::query()
+            ->where('line_user_id', $line_user_id)
+            ->whereHas('lineAuthentications', function($query) use ($nonce){
+                return $query->where('nonce', $nonce);
+            })
+            ->first();
+        
+        $account_id = null;
+        do{
+            $nonce = Str::random(rand(30));
+        }while(User::where('account_id', $nonce)->exists());
+
+        $user = User::create([
+            'account_id' => $account_id,
+            'is_enable'  => true
+        ]);
+        $line_account->status = LineAccountStatus::CONNECTED;
+        $line_account->user_id = $user->id;
+        $line_account->save();
+    }
+
+    public function redirectAccountLink(Request $request)
     {
         $link_token = $request->query('linkToken');
         $line_authentication = LineAuthentication::query()
@@ -156,6 +191,8 @@ class LineController extends Controller
         if(is_null($line_authentication) || is_null($link_token)){
             abort(404);
         }
+
+        $nonce = null;
         do{
             $nonce = base64_encode(Str::random(rand(128,256)));
         }while(LineAuthentication::where('nonce', $nonce)->exists());
