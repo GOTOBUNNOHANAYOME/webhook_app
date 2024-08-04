@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('line_authentications', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('account_id')->unique();
-            $table->integer('is_enable');
-            $table->rememberToken();
+            $table->foreignId('line_account_id')->constrained();
+            $table->string('link_token');
+            $table->string('nonce')->nullable()->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('line_authentications');
     }
 };

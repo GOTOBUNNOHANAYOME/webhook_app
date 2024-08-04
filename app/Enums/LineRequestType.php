@@ -8,4 +8,5 @@ final class LineRequestType extends Enum
 {
     const FOLLOW = 'follow';
     const UNFOLLOW = 'unfollow';
+    const ACCOUNT_LINK = 'accountLink';
 }

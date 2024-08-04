@@ -14,8 +14,12 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'email',
+        'account_id',
         'is_enable',
-        'password',
     ];
+
+    public function lineAccount()
+    {
+        return $this->hasOne(LineAccount::class);
+    }
 }
