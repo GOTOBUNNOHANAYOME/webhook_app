@@ -27,7 +27,7 @@ class LineController extends Controller
                 default;
             }
         }catch(\Exception $e){
-            Log::channel('emergency')->error('error', [
+            Log::channel('line')->error('error', [
                 'message'  => $e->getMessage(),
                 $request_data
             ]);
