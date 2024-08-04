@@ -17,4 +17,9 @@ class LineAccount extends Model
         'icon_path',
         'is_enable'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

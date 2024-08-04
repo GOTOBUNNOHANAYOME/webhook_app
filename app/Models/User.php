@@ -18,4 +18,9 @@ class User extends Authenticatable
         'is_enable',
         'password',
     ];
+
+    public function lineAccount()
+    {
+        return $this->hasOne(LineAccount::class);
+    }
 }
