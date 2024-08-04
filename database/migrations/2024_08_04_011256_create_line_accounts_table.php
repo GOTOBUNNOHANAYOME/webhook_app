@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->string('line_user_id')->unique();
+            $table->integer('status');
             $table->string('name');
             $table->string('language')->nullable();
             $table->string('icon_path')->nullable();

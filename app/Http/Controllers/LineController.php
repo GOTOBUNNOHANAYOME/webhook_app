@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LineAccount;
-use App\Enums\LineRequestType;
+use App\Enums\{
+    LineRequestType,
+    LineAccountStatus
+};
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
@@ -64,12 +67,12 @@ class LineController extends Controller
                 'line_user_id'  => $line_user_id,
                 'language'      => $response_body->language,
                 'icon_path'     => $response_body->pictureUrl,
+                'status'        => LineAccountStatus::TEMPORARY,
                 'is_enable'     => true
             ]);
         }
 
-        $user = $line_account->user;
-        if(is_null($user)){
+        if($line_account->status !== LineAccountStatus::CONNECTED){
             $client = new Client();
 
             $headers = [
