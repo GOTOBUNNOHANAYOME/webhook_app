@@ -107,14 +107,14 @@ class LineController extends Controller
                 'messages' => [
                     [
                         'type'     => 'template',
-                        'altText'  => 'Account Link',
+                        'altText'  => 'ヌッコの民、' . $line_account->name . 'よ。リンクをクリックして認証を済ますやで。',
                         'template' => [
                             'type'    => 'buttons',
-                            'text'    => 'Account Link',
+                            'text'    => 'ヌッコの民、' . $line_account->name . 'よ。リンクをクリックして認証を済ますやで。',
                             'actions' => [
                                 [
                                     'type'  => 'uri',
-                                    'label' => 'Account Link',
+                                    'label' => 'クリックするやで',
                                     'uri'   => route('line.redirect_account_link', ['linkToken' => $response_body->linkToken]),
                                 ],
                             ],
@@ -125,7 +125,7 @@ class LineController extends Controller
 
             $response = $client->request('POST', config('line.message_push'), [
                 'headers' => $headers,
-                'body'    => $request_body
+                'json'    => $request_body
             ]);
 
             if($response->getStatusCode() !== 200){
