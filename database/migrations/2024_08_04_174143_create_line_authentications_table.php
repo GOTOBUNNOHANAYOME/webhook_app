@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('line_account_id')->constrained();
             $table->string('link_token');
-            $table->string('nonce')->nullable()->unique();
+            $table->text('nonce')->nullable()->unique();
             $table->timestamps();
         });
     }

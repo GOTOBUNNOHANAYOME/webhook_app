@@ -14,6 +14,7 @@ class LineAccount extends Model
         'line_user_id',
         'name',
         'language',
+        'status',
         'icon_path',
         'is_enable'
     ];
