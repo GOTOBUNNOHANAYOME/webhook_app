@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LineAccount;
+use App\Models\{
+    LineAccount,
+    LineAuthentication
+};
 use App\Enums\{
     LineRequestType,
     LineAccountStatus
@@ -10,6 +13,7 @@ use App\Enums\{
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class LineController extends Controller
 
@@ -39,7 +43,7 @@ class LineController extends Controller
         return response('OK', 200);
     }
 
-    public function followEvent($request_data)
+    private function followEvent($request_data)
     {
         $line_user_id = $request_data->events[0]->source->userId;
 
@@ -89,6 +93,11 @@ class LineController extends Controller
 
             $response_body = json_decode($response->getBody()->getContents(), false);
             
+            LineAuthentication::create([
+                'line_account_id' => $line_account->id,
+                'link_token'      => $response_body->linkToken
+            ]);
+
             $request_body = [
                 'to'       => $line_account->line_user_id,
                 'messages' => [
@@ -102,7 +111,7 @@ class LineController extends Controller
                                 [
                                     'type'  => 'uri',
                                     'label' => 'Account Link',
-                                    'uri'   => route('line.create', ['linkToken' => $response_body->linkToken]),
+                                    'uri'   => route('line.account_link', ['linkToken' => $response_body->linkToken]),
                                 ],
                             ],
                         ],
@@ -126,7 +135,7 @@ class LineController extends Controller
         }
     }
 
-    public function unfollowEvent($request_data)
+    private function unfollowEvent($request_data)
     {
         $line_user_id = $request_data->events[0]->source->userId;
 
@@ -137,9 +146,23 @@ class LineController extends Controller
             ]);
     }
 
-    public function create(Request $request)
+    public function accountLink(Request $request)
     {
-        $request->query('linkToken');
-        return view('line.create');
+        $link_token = $request->query('linkToken');
+        $line_authentication = LineAuthentication::query()
+            ->where('link_token', $link_token)
+            ->first();
+
+        if(is_null($line_authentication) || is_null($link_token)){
+            abort(404);
+        }
+        do{
+            $nonce = base64_encode(Str::random(rand(128,256)));
+        }while(LineAuthentication::where('nonce', $nonce)->exists());
+
+        $line_authentication->nonce = $nonce;
+        $line_authentication->save();
+
+        return redirect()->away(config('line.link_nonce') . '?linkToken=' . $link_token . '&nonce=' . $nonce);
     }
 }
