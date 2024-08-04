@@ -6,28 +6,39 @@ use App\Models\LineAccount;
 use App\Enums\LineRequestType;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class LineController extends Controller
 
 {
     public function handle(Request $request)
     {
-        $request_data = json_decode($request->getContent());
-        $type = $request_data->events->type;
+        try{
+            $request_data = json_decode($request->getContent());
+            $type = $request_data->events[0]->type;
 
-        switch($type){
-            case LineRequestType::FOLLOW:
-                $this->followEvent($request_data);
-                break;
-            case LineRequestType::UNFOLLOW:
-                $this->unfollowEvent($request_data);
-                break;
+            switch($type){
+                case LineRequestType::FOLLOW:
+                    $this->followEvent($request_data);
+                    break;
+                case LineRequestType::UNFOLLOW:
+                    $this->unfollowEvent($request_data);
+                    break;
+                default;
+            }
+        }catch(\Exception $e){
+            Log::channel('line')->error('error', [
+                'message'  => $e->getMessage(),
+                $request_data
+            ]);
         }
+
+        return response('OK', 200);
     }
 
     public function followEvent($request_data)
     {
-        $line_user_id = $request_data->events->sourse->userId;
+        $line_user_id = $request_data->events[0]->source->userId;
 
         $line_account = LineAccount::where('line_user_id', $line_user_id)->first();
 
@@ -46,7 +57,7 @@ class LineController extends Controller
                 abort(404);
             }
 
-            $response_body = json_decode($response->getBody()->getContents());
+            $response_body = json_decode($response->getBody()->getContents(), false);
 
             LineAccount::create([
                 'name'          => $response_body->displayName,
@@ -65,7 +76,7 @@ class LineController extends Controller
 
     public function unfollowEvent($request_data)
     {
-        $line_user_id = $request_data->events->sourse->userId;
+        $line_user_id = $request_data->events[0]->source->userId;
 
         LineAccount::query()
             ->where('line_user_id', $line_user_id)

@@ -12,12 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('line_accounts', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->string('line_user_id')->unique();
             $table->string('name');
             $table->string('language')->nullable();
             $table->string('icon_path')->nullable();
             $table->boolean('is_enable');
+            $table->timestamps();
         });
     }
 
