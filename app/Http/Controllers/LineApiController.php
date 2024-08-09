@@ -24,6 +24,10 @@ class LineApiController extends Controller
             $request_data = json_decode($request->getContent());
             $type = $request_data->events[0]->type;
 
+            Log::channel('line')->info('infomation', [
+                $request_data
+            ]);
+
             switch($type){
                 case LineRequestType::FOLLOW:
                     $this->followEvent($request_data);
@@ -63,10 +67,6 @@ class LineApiController extends Controller
                 'headers' => $headers,
             ]);
 
-            Log::channel('line')->info('follow_event', [
-                'status_code' => $response->getStatusCode() !== 200,
-                'response'    => json_decode($response->getBody()->getContents())
-            ]);
             if($response->getStatusCode() !== 200){
                 abort(404);
             }
