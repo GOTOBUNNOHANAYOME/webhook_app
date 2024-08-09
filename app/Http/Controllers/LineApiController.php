@@ -63,10 +63,13 @@ class LineApiController extends Controller
                 'headers' => $headers,
             ]);
 
+            Log::channel('line')->info('follow_event', [
+                'status_code' => $response->getStatusCode() !== 200,
+                'response'    => json_decode($response->getBody()->getContents())
+            ]);
             if($response->getStatusCode() !== 200){
                 abort(404);
             }
-
             $response_body = json_decode($response->getBody()->getContents(), false);
 
             $line_account = LineAccount::create([
@@ -145,7 +148,8 @@ class LineApiController extends Controller
         LineAccount::query()
             ->where('line_user_id', $line_user_id)
             ->update([
-                'is_enable' => false
+                'is_enable' => false,
+                'status'    => LineAccountStatus::DISCONNECTED
             ]);
     }
 
