@@ -73,10 +73,10 @@ class LineApiController extends Controller
             $response_body = json_decode($response->getBody()->getContents(), false);
 
             $line_account = LineAccount::create([
-                'name'          => $response_body->displayName,
+                'name'          => $response_body->displayName ?? null,
                 'line_user_id'  => $line_user_id,
-                'language'      => $response_body->language,
-                'icon_path'     => $response_body->pictureUrl,
+                'language'      => $response_body->language ?? null,
+                'icon_path'     => $response_body->pictureUrl ?? null,
                 'status'        => LineAccountStatus::TEMPORARY,
                 'is_enable'     => true
             ]);
